@@ -1,53 +1,45 @@
 import React, { useState } from "react";
+import axios from "axios";
+import Gallery from "./Gallery";
 import "./App.css";
 
+const apiKey = "636e1481b4f3c446d26b8eb6ebfe7127";
 const App = () => {
-  const [city, setCity] = useState("");
-  const [result, setResult] = useState("");
+  const [search, setSearch] = useState("");
+  const [data, setData] = useState([]);
 
   const handler = (e) => {
-    setCity(e.target.value);
+    setSearch(e.target.value);
   };
 
   const submitHandler = (e) => {
     e.preventDefault();
-    fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=d885aa1d783fd13a55050afeef620fcb`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.main) {
-          const kelvin = data.main.temp;
-          const celcius = kelvin - 273.15;
-          setResult(`Temperature at ${city}: ${Math.round(celcius)}°C`);
-        } else {
-          setResult("City not found. Please try again.");
-        }
-        setCity("");
-      });
+    axios
+      .get(
+        `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=${apiKey}&tags=${search}&per_page=24&format=json&nojsoncallback=1`
+      )
+      .then((response) => setData(response.data.photos.photo));
   };
 
   return (
-    <center>
-      <div className="container">
-      <div className="weather-card">
-        <h2 className="title">React Weather App</h2>
+    <div className="container">
+      <div className="gallery-card">
+        <h3 className="title">React Photo Gallery</h3>
         <form onSubmit={submitHandler} className="form">
           <input
             type="text"
-            placeholder="Enter City Name"
-            value={city}
+            placeholder="Enter Search Element"
+            value={search}
             onChange={handler}
             className="input"
           />
           <button type="submit" className="button">
-            Get Temperature
+            Search
           </button>
         </form>
-        <h3 className="result">{result}</h3>
+        {data.length > 0 ? <Gallery data={data} /> : <h5 className="no-data">No Data Loaded</h5>}
       </div>
     </div>
-    </center>
   );
 };
 
